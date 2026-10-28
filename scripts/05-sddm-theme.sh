@@ -251,6 +251,30 @@ else
     ALL_OK=false
 fi
 
+# The greeter runs as the sddm user, so a Material Symbols font installed under
+# the user's home (as the Debian and Fedora installers do) is invisible to it and
+# every icon renders as a box. A copy goes in the theme for its FontLoader.
+bundle_icon_font() {
+    local families=("Material Symbols Rounded" "Material Symbols Outlined")
+    if [[ "$VARIANT" == "mini" ]]; then
+        families=("Material Symbols Outlined" "Material Symbols Rounded")
+    fi
+
+    local family file
+    for family in "${families[@]}"; do
+        # awk rather than head: head closing the pipe early fails it under pipefail.
+        file="$(fc-list -f '%{file}\n' ":family=$family" 2>/dev/null | awk 'NR == 1')" || true
+        if [[ -n "$file" && -f "$file" ]]; then
+            caelestia_sudo mkdir -p "$INSTALL_DIR/assets/material-symbols"
+            caelestia_sudo cp "$file" "$INSTALL_DIR/assets/material-symbols/MaterialSymbols.ttf"
+            return 0
+        fi
+    done
+
+    warn "No Material Symbols font found, login screen icons may render as boxes."
+    ALL_OK=false
+}
+
 install_theme_files() {
     if [[ -d "$INSTALL_DIR" ]]; then
         caelestia_sudo rm -rf "$INSTALL_DIR"
@@ -267,6 +291,8 @@ install_theme_files() {
         warn "GoogleSansFlex.ttf not found at $FONT_SOURCE, theme text may not render correctly."
         ALL_OK=false
     fi
+
+    bundle_icon_font
 
     if [[ "$VARIANT" == "mini" ]]; then
         if [[ -d "$SRC_DIR/themes/full/components/shapes" ]]; then

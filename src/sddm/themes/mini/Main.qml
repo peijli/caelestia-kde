@@ -37,6 +37,17 @@ Rectangle {
         source: "assets/google-sans-flex/GoogleSansFlex.ttf"
     }
 
+    // Bundled by the installer: the greeter cannot see fonts in the user's home.
+    FontLoader {
+        id: iconFont
+
+        source: "assets/material-symbols/MaterialSymbols.ttf"
+        onStatusChanged: {
+            if (status === FontLoader.Ready)
+                Theme.iconFontFamily = name;
+        }
+    }
+
     Item {
         id: keyHandler
 

@@ -48,7 +48,7 @@ Rectangle {
 
         Text {
             renderType: Text.NativeRendering
-            font.family: "Material Symbols Outlined"
+            font.family: Theme.iconFontFamily
             font.pixelSize: 17
             text: root.iconText
             color: root.textColor

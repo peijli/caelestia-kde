@@ -67,7 +67,7 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 renderType: Text.NativeRendering
-                font.family: "Material Symbols Outlined"
+                font.family: Theme.iconFontFamily
                 font.pixelSize: 17
                 text: "lock"
                 color: capsLockCircle.opacity > 0.5 ? Theme.mOnPrimary : Theme.mOnSurfaceVariant
@@ -336,7 +336,7 @@ Item {
                 Text {
                     renderType: Text.NativeRendering
                     anchors.centerIn: parent
-                    font.family: "Material Symbols Outlined"
+                    font.family: Theme.iconFontFamily
                     font.pixelSize: 18
                     rotation: -90
                     text: "arrow_forward"

@@ -337,7 +337,7 @@ Item {
                     spacing: 4
 
                     Text {
-                        font.family: "Material Symbols Outlined"
+                        font.family: Theme.iconFontFamily
                         font.pixelSize: 13
                         color: Theme.mOnSurfaceVariant
                         text: "touch_app"

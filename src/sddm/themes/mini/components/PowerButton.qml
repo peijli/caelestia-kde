@@ -44,7 +44,7 @@ Button {
 
     contentItem: Text {
         text: root.iconText
-        font.family: "Material Symbols Outlined"
+        font.family: Theme.iconFontFamily
         font.pixelSize: 28
         horizontalAlignment: Qt.AlignHCenter
         verticalAlignment: Text.AlignVCenter

@@ -57,6 +57,12 @@ Rectangle {
         target: sddm
     }
 
+    // Registers "Material Symbols Rounded" for MaterialIcon and SessionPicker.
+    // Bundled by the installer: the greeter cannot see fonts in the user's home.
+    FontLoader {
+        source: "assets/material-symbols/MaterialSymbols.ttf"
+    }
+
     AnimatedImage {
         id: background
 

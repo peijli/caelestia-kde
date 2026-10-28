@@ -9,6 +9,9 @@ QtObject {
     property bool videoActive: false
     property var videoItem: null
     property string fontFamily: "Google Sans Flex"
+    // Replaced by the bundled font's family once Main.qml's FontLoader has it,
+    // which may be Rounded where the installer found no Outlined.
+    property string iconFontFamily: "Material Symbols Outlined"
     property real avatarFrameSize: {
         if (theme.avatarShape === "clamshell")
             return 300;
