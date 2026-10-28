@@ -14,7 +14,9 @@ BUNDLE_DIR="${BUNDLE_DIR:?BUNDLE_DIR not set}"
 echo
 
 info "Ensuring Python tooling for konsave backups"
-if ! command -v python3 >/dev/null 2>&1 || ! python3 -m pip --version >/dev/null 2>&1; then
+if command -v uv >/dev/null 2>&1; then
+    ok "uv found; konsave will be installed with it."
+elif ! command -v python3 >/dev/null 2>&1 || ! python3 -m pip --version >/dev/null 2>&1; then
     if [[ "$BASE_DISTRO" == "arch" ]]; then
         caelestia_sudo pacman -S --needed --noconfirm python python-pip
     elif [[ "$BASE_DISTRO" == "fedora" ]]; then

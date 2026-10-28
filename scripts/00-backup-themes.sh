@@ -13,6 +13,7 @@ KONSAVE_BIN=""
 HAD_USER_KONSAVE_CONF=false
 
 source "$(dirname "${BASH_SOURCE[0]}")/lib/log.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/lib/privileges.sh"
 
 ensure_konsave() {
     if command -v konsave >/dev/null 2>&1; then
@@ -20,20 +21,40 @@ ensure_konsave() {
         return 0
     fi
 
-    if ! command -v python3 >/dev/null 2>&1; then
-        die "python3 is required to install konsave."
+    KONSAVE_BIN="$KONSAVE_VENV_DIR/bin/konsave"
+    if [[ -x "$KONSAVE_BIN" ]]; then
+        return 0
     fi
 
     info "Installing konsave for KDE profile backups..."
-    if [[ ! -x "$KONSAVE_VENV_DIR/bin/konsave" ]]; then
+    # Drop any half-created venv from a previous failed attempt.
+    rm -rf "${KONSAVE_VENV_DIR:?}"
+
+    # uv builds the venv itself (no ensurepip/python3-venv needed) and can
+    # fetch an interpreter when python3 is missing.
+    if command -v uv >/dev/null 2>&1; then
+        uv venv --quiet "$KONSAVE_VENV_DIR" >/dev/null 2>&1 ||
+            die "Failed to create a local virtual environment for konsave with uv."
+        uv pip install --quiet --python "$KONSAVE_VENV_DIR/bin/python" --upgrade konsave >/dev/null 2>&1 ||
+            die "Failed to install konsave with uv."
+    else
+        if ! command -v python3 >/dev/null 2>&1; then
+            die "python3 (or uv) is required to install konsave."
+        fi
+
+        # Debian/Ubuntu ship python3 without ensurepip; venv needs python3-venv.
+        if ! python3 -c 'import ensurepip' >/dev/null 2>&1 && [[ "${BASE_DISTRO:-}" == "debian" ]]; then
+            info "Installing python3-venv..."
+            caelestia_sudo apt-get install -y python3-venv ||
+                die "Failed to install python3-venv."
+        fi
+
         python3 -m venv "$KONSAVE_VENV_DIR" >/dev/null 2>&1 ||
             die "Failed to create a local virtual environment for konsave."
         "$KONSAVE_VENV_DIR/bin/python" -m pip install --upgrade pip >/dev/null 2>&1 || true
         "$KONSAVE_VENV_DIR/bin/python" -m pip install --upgrade konsave >/dev/null 2>&1 ||
             die "Failed to install konsave."
     fi
-
-    KONSAVE_BIN="$KONSAVE_VENV_DIR/bin/konsave"
 
     [[ -x "$KONSAVE_BIN" ]] || die "konsave is still unavailable after installation."
 }
