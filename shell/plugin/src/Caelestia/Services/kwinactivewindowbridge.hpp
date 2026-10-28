@@ -7,6 +7,8 @@
 #include <QVariantList>
 #include <QVariantMap>
 
+class QScreen;
+
 namespace caelestia::services {
 
 class PlasmaWindowHandle;
@@ -68,6 +70,7 @@ private:
     QVariantMap windowToVariant(PlasmaWindowHandle* w) const;
     QString getOutputNameForGeometry(int x, int y, int w, int h) const;
     void onStateChanged(PlasmaWindowHandle* handle);
+    void watchScreen(QScreen* screen);
     // Rebuilds m_windowIndex from the current m_windowList. Call after any
     // operation that inserts, removes, or reorders entries.
     void rebuildIndex();

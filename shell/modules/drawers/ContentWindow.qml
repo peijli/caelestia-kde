@@ -517,6 +517,7 @@ StyledWindow {
             }
         }
         Component.onCompleted: Visibilities.load(root.screen, this)
+        Component.onDestruction: Visibilities.unload(this)
     }
     Interactions {
         id: interactions
@@ -670,6 +671,7 @@ StyledWindow {
             popouts: panels.popouts
             fullscreen: root.hasFullscreen
             Component.onCompleted: Visibilities.registerBar(root.screen, this)
+            Component.onDestruction: Visibilities.unregisterBar(this)
         }
         Connections {
             function onOpenDesktopContextMenu(x, y, screenName) {

@@ -24,6 +24,22 @@ KWinActiveWindowBridge::KWinActiveWindowBridge(QObject* parent)
     connect(plasmaWindows, &PlasmaWindows::windowAdded, this, &KWinActiveWindowBridge::onWindowAdded);
     connect(plasmaWindows, &PlasmaWindows::handleLost, this, &KWinActiveWindowBridge::onWindowLost);
 
+    // Each window's "output" is derived from screen geometry, so it goes stale
+    // when outputs are added, removed or rearranged without the window moving.
+    for (QScreen* screen : QGuiApplication::screens()) {
+        watchScreen(screen);
+    }
+    connect(qGuiApp, &QGuiApplication::screenAdded, this, [this](QScreen* screen) {
+        watchScreen(screen);
+        scheduleWindowListUpdate();
+    });
+    connect(qGuiApp, &QGuiApplication::screenRemoved, this, [this](QScreen* screen) {
+        if (screen->name() == m_activeOutputName) {
+            setActiveOutputName(QString());
+        }
+        scheduleWindowListUpdate();
+    });
+
     // Clear any stale highlight from a previous session or crash on startup
     clearHighlight();
 }
@@ -209,6 +225,10 @@ void KWinActiveWindowBridge::scheduleWindowListUpdate() {
     if (!m_updateTimer.isActive()) {
         m_updateTimer.start();
     }
+}
+
+void KWinActiveWindowBridge::watchScreen(QScreen* screen) {
+    connect(screen, &QScreen::geometryChanged, this, &KWinActiveWindowBridge::scheduleWindowListUpdate);
 }
 
 void KWinActiveWindowBridge::rebuildIndex() {

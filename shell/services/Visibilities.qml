@@ -68,17 +68,34 @@ Singleton {
         });
     }
 
+    // Unregistering goes by value, not screen: the screen can already be gone
+    // when its delegate is destroyed, and a replacement for the same output
+    // may have registered under the same key first.
+    function withoutValue(map: var, value: var): var {
+        const next = new Map(map);
+        for (const [key, v] of map)
+            if (v === value)
+                next.delete(key);
+        return next;
+    }
+
+    function unload(visibilities: DrawerVisibilities): void {
+        screens = withoutValue(screens, visibilities);
+    }
+
     function registerBar(screen: ShellScreen, barWrapper: var): void {
         bars.set(screen.name, barWrapper);
         bars = new Map(bars);
+    }
+    function unregisterBar(barWrapper: var): void {
+        bars = withoutValue(bars, barWrapper);
     }
     function registerDock(screen: ShellScreen, dock: var): void {
         docks.set(screen.name, dock);
         docks = new Map(docks);
     }
-    function unregisterDock(screen: ShellScreen): void {
-        docks.delete(screen.name);
-        docks = new Map(docks);
+    function unregisterDock(dock: var): void {
+        docks = withoutValue(docks, dock);
     }
     function getForActive(): DrawerVisibilities {
         const monitor = Kwin.monitors.find(m => m.name === Kwin.cursorOutputName()) || Kwin.focusedMonitor;

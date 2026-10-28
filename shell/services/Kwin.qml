@@ -38,52 +38,18 @@ Singleton {
     readonly property alias options: extras.options
     readonly property alias devices: extras.devices
     property var monitorState: []
+    // Mocks are kept for outputs that go away, so a display that is unplugged and
+    // plugged back in maps to the same object and anything keyed by it stays valid.
     property var _monitorCache: ({})
     property bool hadKeyboard: false
     property string lastSpecialWorkspace: ""
-    readonly property var monitors: {
-        const screens = [...Quickshell.screens];
-        const screenNames = screens.map(s => s.name);
-        const cachedNames = Object.keys(root._monitorCache);
-        const topologyChanged = cachedNames.length !== screenNames.length
-            || cachedNames.some(name => !screenNames.includes(name));
-
-        if (topologyChanged) {
-            for (const name of cachedNames) {
-                if (!screenNames.includes(name))
-                    delete root._monitorCache[name];
-            }
-            for (let i = 0; i < screens.length; i++) {
-                if (!root._monitorCache[screens[i].name])
-                    root._monitorCache[screens[i].name] = root.createMonitorMock(screens[i].name, i);
-            }
-        }
-
-        for (let i = 0; i < screens.length; i++) {
-            root._monitorCache[screens[i].name].id = i;
-            root._monitorCache[screens[i].name].focused = i === 0;
-        }
-
-        return Object.values(root._monitorCache);
-    }
+    // Connected outputs only, in Quickshell.screens order. Rebuilt by
+    // syncMonitors() rather than a binding, since it updates the cached mocks.
+    property var monitors: []
     readonly property var focusedMonitor: {
-        let _ = root.monitors;
+        const mons = root.monitors;
         const targetName = root.activeOutputName;
-
-        if (targetName) {
-            for (const key in root._monitorCache) {
-                if (root._monitorCache[key].name === targetName)
-                    return root._monitorCache[key];
-            }
-        }
-
-        for (const key in root._monitorCache) {
-            if (root._monitorCache[key].focused)
-                return root._monitorCache[key];
-        }
-
-        const keys = Object.keys(root._monitorCache);
-        return keys.length > 0 ? root._monitorCache[keys[0]] : null;
+        return mons.find(m => m.name === targetName) ?? mons.find(m => m.focused) ?? mons[0] ?? null;
     }
 
     signal configReloaded
@@ -438,10 +404,24 @@ Singleton {
         return root.monitors.map(m => m.name);
     }
 
+    function syncMonitors(): void {
+        root.monitors = [...Quickshell.screens].map((s, i) => {
+            const m = root.monitorFor(s);
+            m.id = i;
+            m.focused = i === 0;
+            return m;
+        });
+    }
+
     function monitorFor(screen: ShellScreen): var {
+        // Bindings on per-screen delegates can re-run with a null screen while
+        // the delegate is torn down after its output is unplugged.
+        if (!screen)
+            return null;
         let cached = root._monitorCache[screen.name];
         if (!cached) {
-            cached = root.createMonitorMock(screen.name, Object.keys(root._monitorCache).length);
+            const index = Quickshell.screens.findIndex(s => s.name === screen.name);
+            cached = root.createMonitorMock(screen.name, index >= 0 ? index : Object.keys(root._monitorCache).length);
             root._monitorCache[screen.name] = cached;
         }
         return cached;
@@ -492,6 +472,10 @@ Singleton {
         hadKeyboard = kbLayoutFull.length > 0;
     }
     onWorkspacesChanged: root.refreshWindows()
+    Component.onCompleted: {
+        syncMonitors();
+        Quickshell.screensChanged.connect(root.syncMonitors);
+    }
 
     IpcHandler {
         function refreshDevices(): void {

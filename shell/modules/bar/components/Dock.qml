@@ -1120,8 +1120,5 @@ Item {
             Visibilities.registerDock(root.bar.screen, root);
     }
 
-    Component.onDestruction: {
-        if (root.bar && root.bar.screen)
-            Visibilities.unregisterDock(root.bar.screen);
-    }
+    Component.onDestruction: Visibilities.unregisterDock(root)
 }

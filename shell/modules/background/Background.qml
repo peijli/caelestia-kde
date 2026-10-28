@@ -18,7 +18,7 @@ Variants {
         id: win
 
         required property ShellScreen modelData
-        readonly property var drawerVisibilities: Visibilities.screens.get(Kwin.monitorFor(modelData)) ?? Visibilities.screens.get(modelData.name)
+        readonly property var drawerVisibilities: Visibilities.screens.get(Kwin.monitorFor(modelData)) ?? Visibilities.screens.get(modelData?.name)
         readonly property bool isOverviewOpen: drawerVisibilities ? drawerVisibilities.overview : false
         readonly property bool wallpaperUp: wallpaper.item?.shown ?? false
         property bool wallpaperHasBeenUp: false

@@ -63,7 +63,7 @@ Item {
         id: slideshowTimer
 
         interval: Math.max(1, Math.round(Config.background.slideshowInterval * 60)) * 60 * 1000
-        running: Config.background.slideshowEnabled && Config.background.wallpaperEnabled && root.screen && root.screen.name === Quickshell.screens[0].name
+        running: Config.background.slideshowEnabled && Config.background.wallpaperEnabled && root.screen && root.screen.name === Quickshell.screens[0]?.name
         repeat: true
         onTriggered: {
             if (Config.background.slideshowRandom) {
