@@ -10,9 +10,9 @@ Item {
     required property string currentUser
     required property int rectHeight
 
-    property string os: (config.os || "Arch").split(" ")[0]
+    property string os: config.os || "Linux"
     property string host: config.host || "localhost"
-    property string session: (root.currentSession || "Hyprland").split(" ")[0]
+    property string session: root.currentSession || "-"
 
     RowLayout {
         Rectangle {
@@ -65,33 +65,60 @@ Item {
                 Layout.preferredHeight: 130
             }
 
-            RowLayout {
-                spacing: 10
+            GridLayout {
+                columns: 2
+                columnSpacing: 10
+                rowSpacing: 0
+                Layout.leftMargin: 12
+                Layout.topMargin: root.rectHeight / 10
 
-                Text {
-                    renderType: Text.NativeRendering
-                    Layout.leftMargin: 12
-                    Layout.topMargin: root.rectHeight / 10
-                    text: "WM     :\nUSER   :\nOS     :\nHOST   :"
-                    color: config.text
-                    font.pixelSize: 18
-                    font.family: "CaskaydiaCove NF"
-                    lineHeight: 30
-                    lineHeightMode: Text.FixedHeight
-                    Layout.preferredWidth: 80
+                Repeater {
+                    model: [
+                        { label: "SESSION :", value: root.session },
+                        { label: "USER    :", value: root.currentUser },
+                        { label: "OS      :", value: root.os },
+                        { label: "HOST    :", value: root.host }
+                    ]
+
+                    delegate: Text {
+                        required property var modelData
+                        required property int index
+
+                        renderType: Text.NativeRendering
+                        text: modelData.label
+                        color: config.text
+                        font.pixelSize: 18
+                        font.family: "CaskaydiaCove NF"
+                        Layout.row: index
+                        Layout.column: 0
+                        Layout.preferredHeight: 30
+                        verticalAlignment: Text.AlignVCenter
+                    }
                 }
 
-                Text {
-                    renderType: Text.NativeRendering
-                    Layout.leftMargin: 0
-                    Layout.topMargin: root.rectHeight / 10
-                    text: root.session + "\n" + root.currentUser + "\n" + root.os + "\n" + root.host
-                    color: config.text
-                    font.pixelSize: 18
-                    font.family: "CaskaydiaCove NF"
-                    lineHeight: 30
-                    lineHeightMode: Text.FixedHeight
-                    Layout.preferredWidth: 100
+                // Session and distro names can be long ("Plasma (Wayland)",
+                // "Ubuntu 26.04.1 LTS"): shrink to fit the panel, then elide.
+                Repeater {
+                    model: [root.session, root.currentUser, root.os, root.host]
+
+                    delegate: Text {
+                        required property string modelData
+                        required property int index
+
+                        renderType: Text.NativeRendering
+                        text: modelData
+                        color: config.text
+                        font.pixelSize: 18
+                        font.family: "CaskaydiaCove NF"
+                        fontSizeMode: Text.HorizontalFit
+                        minimumPixelSize: 12
+                        elide: Text.ElideRight
+                        Layout.row: index
+                        Layout.column: 1
+                        Layout.preferredWidth: 110
+                        Layout.preferredHeight: 30
+                        verticalAlignment: Text.AlignVCenter
+                    }
                 }
             }
         }

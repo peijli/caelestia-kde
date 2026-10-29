@@ -32,7 +32,10 @@ Rectangle {
     }
     property bool capsLockOn: false
     property bool mainCardBgBlur: config.mainCardBgBlur === "true"
-    property int sessionIndex
+    // Start on the session SDDM remembers from the last login, not the first
+    // in the list; this is also what logs in while the picker is hidden.
+    readonly property int lastSessionIndex: sessionModel.lastIndex >= 0 && sessionModel.lastIndex < sessionModel.count ? sessionModel.lastIndex : 0
+    property int sessionIndex: lastSessionIndex
     property real largeRadius: mainCard.radius
     property real midRadius: mainCard.radius / 1.4
     property real smallRadius: mainCard.radius / 2
@@ -481,8 +484,7 @@ Rectangle {
             anchors.top: parent.top
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.topMargin: mainCard.height - 100
-            currentText: sessionPickerBtn.items.length > 0 ? sessionPickerBtn.items[0] : ""
-            selectedIndex: 0
+            selectedIndex: root.lastSessionIndex
             opacity: root.firstInput ? 0 : root.mainCardComponentsOpacity
             visible: root.sessionPickerEnabled
             onSelectedIndexChanged: {

@@ -275,6 +275,24 @@ bundle_icon_font() {
     ALL_OK=false
 }
 
+# The fetch panel's OS and HOST rows read theme.conf. sync.sh rewrites them on
+# every theme change, but they are set here too so a greeter that has never been
+# synced shows this machine rather than the template's placeholders.
+write_system_info() {
+    local conf="$INSTALL_DIR/theme.conf"
+    [[ -f "$conf" ]] || return 0
+
+    local sys_os sys_host
+    sys_os="$( . /etc/os-release 2>/dev/null && printf '%s' "${PRETTY_NAME:-${NAME:-}}" )" || true
+    sys_host="$(hostname 2>/dev/null || cat /etc/hostname 2>/dev/null)" || true
+
+    # Strip anything that could break the sed expression or the INI line.
+    sys_os="$(printf '%s' "${sys_os:-Linux}" | tr -d '\n' | sed 's/[\/&]/\\&/g')"
+    sys_host="$(printf '%s' "${sys_host:-localhost}" | tr -d '\n' | sed 's/[\/&]/\\&/g')"
+
+    caelestia_sudo sed -i -e "s/^os=.*/os=$sys_os/" -e "s/^host=.*/host=$sys_host/" "$conf"
+}
+
 install_theme_files() {
     if [[ -d "$INSTALL_DIR" ]]; then
         caelestia_sudo rm -rf "$INSTALL_DIR"
@@ -293,6 +311,7 @@ install_theme_files() {
     fi
 
     bundle_icon_font
+    write_system_info
 
     if [[ "$VARIANT" == "mini" ]]; then
         if [[ -d "$SRC_DIR/themes/full/components/shapes" ]]; then

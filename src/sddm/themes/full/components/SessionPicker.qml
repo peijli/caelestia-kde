@@ -10,15 +10,15 @@ Item {
     property int selectedIndex: 0
     property string currentText
     Component.onCompleted: {
-        root.currentText = sessionArray.sessions[root.selectedIndex].name;
         const arr = [];
         for (let i = 0; i < sessionArray.sessions.length; i++) {
             arr.push(sessionArray.sessions[i].name);
         }
         root.items = arr;
+        root.currentText = root.items[root.selectedIndex] ?? "";
     }
     onSelectedIndexChanged: {
-        root.currentText = sessionArray.sessions[root.selectedIndex].name;
+        root.currentText = root.items[root.selectedIndex] ?? "";
     }
 
     width: labelRect.width + expandBtn.width
